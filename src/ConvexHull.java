@@ -19,13 +19,13 @@ public class ConvexHull {
 		points2 = convexHull(points2);
 		points = combineHull(points1, points2); 
 		
-		for (int i = 0; i < points1.size(); i++) {
-			System.out.println(points1.get(i)); 
-		}
-		
-		for (int i = 0; i < points2.size(); i++) {
-			System.out.println(points2.get(i)); 
-		}
+//		for (int i = 0; i < points1.size(); i++) {
+//			System.out.println(points1.get(i)); 
+//		}
+//		
+//		for (int i = 0; i < points2.size(); i++) {
+//			System.out.println(points2.get(i)); 
+//		}
 		
 		for (int i = 0; i < points.size(); i++) {
 			System.out.println(points.get(i)); 
@@ -79,19 +79,19 @@ public class ConvexHull {
 			flag = true;
 			
 			while (orient(right.get(leftTp), left.get(rightTp), left.get((rightTp + 1) % left.size())) >= 0) {
-				rightTp = (rightTp++) % left.size();
+				rightTp = (rightTp + 1) % left.size();
 				System.out.println("loop1");
 			}
 			
-			while (orient(left.get(rightTp), right.get(rightTp), right.get((rightTp - 1 + right.size()) % right.size())) <= 0) {
+			while (orient(left.get(rightTp), right.get(leftTp), right.get((leftTp - 1 + right.size()) % right.size())) <= 0) {
 				leftTp = (right.size() + leftTp - 1) % right.size();
 				flag = false;
 				System.out.println("loop2");
 			}			
 		}
 		
-		upperLeft = leftTp;
-		upperRight = rightTp;
+		upperLeft = rightTp;
+		upperRight = leftTp;
 		leftTp = leftMost; rightTp = rightMost;	
 		flag = false;
 		
@@ -99,7 +99,7 @@ public class ConvexHull {
 			
 			flag = true;
 			
-			while (orient(left.get(rightTp), right.get(rightTp), right.get((rightTp + 1) % right.size())) >= 0) {
+			while (orient(left.get(rightTp), right.get(leftTp), right.get((leftTp + 1) % right.size())) >= 0) {
 				leftTp = (leftTp + 1) % right.size();
 				System.out.println("loop3");
 			}
@@ -111,8 +111,8 @@ public class ConvexHull {
 			}			
 		}
 		
-		lowerLeft = leftTp;
-		lowerRight = rightTp;
+		lowerLeft = rightTp;
+		lowerRight = leftTp;
 		
 		mergedHull.add(left.get(upperLeft));
 		leftTp = upperLeft;
