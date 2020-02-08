@@ -19,14 +19,6 @@ public class ConvexHull {
 		points2 = convexHull(points2);
 		points = combineHull(points1, points2); 
 		
-//		for (int i = 0; i < points1.size(); i++) {
-//			System.out.println(points1.get(i)); 
-//		}
-//		
-//		for (int i = 0; i < points2.size(); i++) {
-//			System.out.println(points2.get(i)); 
-//		}
-		
 		for (int i = 0; i < points.size(); i++) {
 			System.out.println(points.get(i)); 
 		}
@@ -51,7 +43,7 @@ public class ConvexHull {
 		return points;
 	}
 	
-	private static ArrayList<Point> combineHull(ArrayList<Point> left, ArrayList<Point> right){
+	public static ArrayList<Point> combineHull(ArrayList<Point> left, ArrayList<Point> right){
 		
 		int leftMost= 0, rightMost = 0; 
 		int leftTp, rightTp;
@@ -80,13 +72,11 @@ public class ConvexHull {
 			
 			while (orient(right.get(leftTp), left.get(rightTp), left.get((rightTp + 1) % left.size())) >= 0) {
 				rightTp = (rightTp + 1) % left.size();
-				System.out.println("loop1");
 			}
 			
 			while (orient(left.get(rightTp), right.get(leftTp), right.get((leftTp - 1 + right.size()) % right.size())) <= 0) {
 				leftTp = (right.size() + leftTp - 1) % right.size();
 				flag = false;
-				System.out.println("loop2");
 			}			
 		}
 		
@@ -101,13 +91,11 @@ public class ConvexHull {
 			
 			while (orient(left.get(rightTp), right.get(leftTp), right.get((leftTp + 1) % right.size())) >= 0) {
 				leftTp = (leftTp + 1) % right.size();
-				System.out.println("loop3");
 			}
 			
 			while (orient(right.get(leftTp), left.get(rightTp), left.get( (left.size() + rightTp - 1) % left.size())) <= 0) {
 				rightTp = (left.size() + rightTp - 1) % left.size();
 				flag = false;
-				System.out.println("loop4");
 			}			
 		}
 		
@@ -134,7 +122,7 @@ public class ConvexHull {
 		
 	}
 	
-	private static ArrayList<Point> convexHull(ArrayList<Point> points){
+	public static ArrayList<Point> convexHull(ArrayList<Point> points){
 		
 		if (points.size() < 3) return null; 
 		
@@ -173,5 +161,6 @@ public class ConvexHull {
        return (q.getY() - p.getY()) * (r.getX() - q.getX()) - 
                   (q.getX() - p.getX()) * (r.getY() - q.getY());       
     } 
+	
 
 }
