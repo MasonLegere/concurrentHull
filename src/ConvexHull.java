@@ -15,10 +15,10 @@ public class ConvexHull {
 		ArrayList<Point> points1 =  new ArrayList<Point>( points.subList(0, points.size()/2)); 
 		ArrayList<Point> points2 =  new ArrayList<Point>( points.subList(points.size()/2 + 1,points.size())); 
 		
-		points1 = convexHull(points1);
-		points2 = convexHull(points2);
-		points = combineHull(points1, points2); 
-		
+//		points1 = convexHull(points1);
+//		points2 = convexHull(points2);
+//		points = combineHull(points1, points2); 
+//		
 		for (int i = 0; i < points.size(); i++) {
 			System.out.println(points.get(i)); 
 		}
@@ -43,7 +43,10 @@ public class ConvexHull {
 		return points;
 	}
 	
-	public static ArrayList<Point> combineHull(ArrayList<Point> left, ArrayList<Point> right){
+	public static IntegerLattice combineHull(IntegerLattice leftLattice, IntegerLattice rightLattice){
+		
+		ArrayList<Point> left = leftLattice.getLattice();
+		ArrayList<Point> right = rightLattice.getLattice();
 		
 		int leftMost= 0, rightMost = 0; 
 		int leftTp, rightTp;
@@ -118,12 +121,13 @@ public class ConvexHull {
 			mergedHull.add(right.get(leftTp));
 		}
 		
-		return mergedHull; 
+		return new IntegerLattice(leftLattice.getLeftPoint(), rightLattice.getRightPoint(), mergedHull); 
 		
 	}
 	
-	public static ArrayList<Point> convexHull(ArrayList<Point> points){
+	public static IntegerLattice convexHull(IntegerLattice lattice){
 		
+		ArrayList<Point> points = lattice.getLattice();
 		if (points.size() < 3) return null; 
 		
 		ArrayList<Point> hull = new ArrayList<Point>();
@@ -150,7 +154,7 @@ public class ConvexHull {
        
         } while (p != l);
         
-		return hull;
+		return new IntegerLattice(lattice.getLeftPoint(), lattice.getRightPoint(), points);
 	}
 	
 	// 0 --> p, q and r are colinear 

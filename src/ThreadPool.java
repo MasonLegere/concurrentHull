@@ -1,36 +1,40 @@
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class ThreadPool {
-	private final int numThreads; 
 	private final PoolThread[] threads; 
-	private final LinkedBlockingQueue q;
+	private final LinkedBlockingQueue<Task> q;
+	private int numLattices; 
 	
-	public ThreadPool(int numThreads) {
-		this.numThreads = numThreads; 
+	public ThreadPool(int numThreads, int numLattices) throws InterruptedException {
 		threads = new PoolThread[numThreads]; 
-		q = new LinkedBlockingQueue();
+		q = new LinkedBlockingQueue<Task>();
+		this.numLattices = numLattices;
 		
 		for (int i = 0; i < numThreads; i++) {
 			threads[i] = new PoolThread(); 
 			threads[i].start();
 		}
+		
+		for (int i = 0; i < numThreads; i++) {
+			threads[i].join();
+		}
 	}
 	
-	public void runTask(Runnable task) {
-		synchronized(q){
-			if (!q.isEmpty()) {
+	public void runTask(Task task) {
+		synchronized(q){			
 				q.add(task); 
-				q.notify();
-			}
+				q.notify();			
 		}
 	}
 	
 	private class PoolThread extends Thread {
 		Runnable task;
+		
+		@Override
 		public void run() {
 			while(true) {
 				synchronized (q) {
-					while(q.isEmpty()) {
+					while(q.size() < 2) {
 						try {
 							q.wait();
 						} catch (InterruptedException e) {
@@ -38,7 +42,8 @@ public class ThreadPool {
 						}
 					}
 					
-					task = (Runnable) q.poll();
+					// Could be a better solution using take()
+					task = q.poll().combineTasks(q.poll());
 					
 				}
 				
