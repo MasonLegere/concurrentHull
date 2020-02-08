@@ -1,47 +1,142 @@
-import java.awt.List;
-import java.util.ArrayList;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 public class ConvexHull {
 
-	public static void main(String[] args) {
+	
+	public static void main(String[] args) throws IOException {
 		
-
+		ArrayList<Point> points = readFile("ConvexHullInput.txt");
+		points.sort(Comparator.comparing(Point:: getX));
+		ArrayList<Point> points1 =  new ArrayList<Point>( points.subList(0, points.size()/2)); 
+		ArrayList<Point> points2 =  new ArrayList<Point>( points.subList(points.size()/2 + 1,points.size())); 
+		
+		points1 = convexHull(points1);
+		points2 = convexHull(points2);
+		points = combineHull(points1, points2); 
+		
+		for (int i = 0; i < points1.size(); i++) {
+			System.out.println(points1.get(i)); 
+		}
+		
+		for (int i = 0; i < points2.size(); i++) {
+			System.out.println(points2.get(i)); 
+		}
+		
+		for (int i = 0; i < points.size(); i++) {
+			System.out.println(points.get(i)); 
+		}
+		
 	}
 	
-	private static ArrayList<Point> combineHull(ArrayList<Point> leftPoints, ArrayList<Point> rightPoints){
+	private static ArrayList<Point> readFile(String fileName) throws IOException{
+			
+		BufferedReader reader = new BufferedReader(new FileReader(fileName));
+		ArrayList<Point> points = new ArrayList<Point>();
 		
-		Point leftMostPoint = rightPoints.get((0));
-		Point rightMostPoint = leftPoints.get((0));
-		int leftMostIndex = 0, rightMostIndex = 0; 
-		Point leftTemp, rightTemp;
-		Point prevPointp, prevPointq;
+		String[] arr;
+		
+		String input = reader.readLine();
+		
+		while(input != null) {
+			arr = input.split(" ");
+			points.add(new Point(arr[0],arr[1]));	
+			input = reader.readLine();
+		}
+		
+		return points;
+	}
+	
+	private static ArrayList<Point> combineHull(ArrayList<Point> left, ArrayList<Point> right){
+		
+		int leftMost= 0, rightMost = 0; 
+		int leftTp, rightTp;
+		int upperLeft, lowerLeft;
+		int upperRight, lowerRight; 
+		boolean flag =  false;
+		ArrayList<Point> mergedHull = new ArrayList<Point>();
 		
 		
-		for (int i = 1; i < leftPoints.size(); i++) {
-			if (leftPoints.get(i).getX() >= rightMostPoint.getX()) {
-				rightMostPoint = leftPoints.get(i);
-				rightMostIndex = i;
+		for (int i = 1; i < left.size(); i++) {
+			if (left.get(i).getX() > left.get(rightMost).getX()) {
+				rightMost = i;
 			}
 		}
 		
-		for (int i = 1; i < rightPoints.size(); i++) {
-			if (rightPoints.get(i).getX() <= leftMostPoint.getX()) {
-				leftMostPoint = rightPoints.get(i);
-				leftMostIndex = i;
+		for (int i = 1; i < right.size(); i++) {
+			if (right.get(i).getX() < right.get(leftMost).getX()) {
+				leftMost = i;
 			}
 		}
 		
+		leftTp = leftMost; rightTp = rightMost;
 		
-		while(true) {
-			prevPointp = leftMostPoint
+		while(!flag) {
+			flag = true;
+			
+			while (orient(right.get(leftTp), left.get(rightTp), left.get((rightTp + 1) % left.size())) >= 0) {
+				rightTp = (rightTp++) % left.size();
+				System.out.println("loop1");
+			}
+			
+			while (orient(left.get(rightTp), right.get(rightTp), right.get((rightTp - 1 + right.size()) % right.size())) <= 0) {
+				leftTp = (right.size() + leftTp - 1) % right.size();
+				flag = false;
+				System.out.println("loop2");
+			}			
 		}
 		
+		upperLeft = leftTp;
+		upperRight = rightTp;
+		leftTp = leftMost; rightTp = rightMost;	
+		flag = false;
 		
-		return null; 
+		while(!flag) {
+			
+			flag = true;
+			
+			while (orient(left.get(rightTp), right.get(rightTp), right.get((rightTp + 1) % right.size())) >= 0) {
+				leftTp = (leftTp + 1) % right.size();
+				System.out.println("loop3");
+			}
+			
+			while (orient(right.get(leftTp), left.get(rightTp), left.get( (left.size() + rightTp - 1) % left.size())) <= 0) {
+				rightTp = (left.size() + rightTp - 1) % left.size();
+				flag = false;
+				System.out.println("loop4");
+			}			
+		}
+		
+		lowerLeft = leftTp;
+		lowerRight = rightTp;
+		
+		mergedHull.add(left.get(upperLeft));
+		leftTp = upperLeft;
+		
+		while (leftTp != lowerLeft) {
+			leftTp = (leftTp + 1) % left.size();
+			mergedHull.add(left.get(leftTp));
+		}
+		
+		leftTp = lowerRight;
+		mergedHull.add(right.get(lowerRight));
+		
+		while(leftTp != upperRight) {
+			leftTp = (leftTp + 1) % right.size();
+			mergedHull.add(right.get(leftTp));
+		}
+		
+		return mergedHull; 
 		
 	}
 	
 	private static ArrayList<Point> convexHull(ArrayList<Point> points){
+		
+		if (points.size() < 3) return null; 
 		
 		ArrayList<Point> hull = new ArrayList<Point>();
 		
@@ -51,31 +146,18 @@ public class ConvexHull {
                 l = i; 
 		
         int p = l, q; 
-        do
-        { 
-            // Add current point to result 
+        do {
             hull.add(points.get(p)); 
        
-            // Search for a point 'q' such that  
-            // orientation(p, x, q) is counterclockwise  
-            // for all points 'x'. The idea is to keep  
-            // track of last visited most counterclock- 
-            // wise point in q. If any point 'i' is more  
-            // counterclock-wise than q, then update q. 
             q = (p + 1) % points.size(); 
               
-            for (int i = 0; i < points.size(); i++) 
-            { 
-               // If i is more counterclockwise than  
-               // current q, then update q 
-               if (orientation(points.get(p), points.get(i), points.get(q)) 
-                                                   == 2) 
+            for (int i = 0; i < points.size(); i++) {
+            
+               if (orient(points.get(p), points.get(i), points.get(q)) < 0) 
+                                            
                    q = i; 
             } 
-       
-            // Now q is the most counterclockwise with 
-            // respect to p. Set p as q for next iteration,  
-            // so that q is added to result 'hull' 
+
             p = q; 
        
         } while (p != l);
@@ -86,20 +168,10 @@ public class ConvexHull {
 	// 0 --> p, q and r are colinear 
 	// 1 --> Clockwise 
 	// 2 --> Counterclockwise 
-	public static int orientation(Point p, Point q, Point r) 
+	public static int orient(Point p, Point q, Point r) 
     { 
-        int dir = (q.getY() - p.getY()) * (r.getX() - q.getX()) - 
-                  (q.getX() - p.getX()) * (r.getY() - q.getY()); 
-       
-        if (dir == 0) {
-        	return 0; 
-        }
-        else if (dir > 0) {
-        	return 1;
-        }
-        else {
-        	return 2;
-        }
+       return (q.getY() - p.getY()) * (r.getX() - q.getX()) - 
+                  (q.getX() - p.getX()) * (r.getY() - q.getY());       
     } 
 
 }
