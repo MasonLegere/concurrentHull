@@ -32,7 +32,7 @@ public class ThreadPool {
 		
 		@Override
 		public void run() {
-			while(true) {
+			while(numLattices > 1) {
 				synchronized (q) {
 					while(q.size() < 2) {
 						try {
@@ -44,6 +44,8 @@ public class ThreadPool {
 					
 					// Could be a better solution using take()
 					task = q.poll().combineTasks(q.poll());
+					// Each time two sets are combined the total number of lattice points decreases yuj
+					numLattices--; 
 					
 				}
 				

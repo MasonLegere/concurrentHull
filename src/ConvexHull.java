@@ -15,6 +15,8 @@ public class ConvexHull {
 		ArrayList<Point> points1 =  new ArrayList<Point>( points.subList(0, points.size()/2)); 
 		ArrayList<Point> points2 =  new ArrayList<Point>( points.subList(points.size()/2 + 1,points.size())); 
 		
+		
+		
 //		points1 = convexHull(points1);
 //		points2 = convexHull(points2);
 //		points = combineHull(points1, points2); 
@@ -42,7 +44,7 @@ public class ConvexHull {
 		
 		return points;
 	}
-	
+	// 
 	public static IntegerLattice combineHull(IntegerLattice leftLattice, IntegerLattice rightLattice){
 		
 		ArrayList<Point> left = leftLattice.getLattice();
