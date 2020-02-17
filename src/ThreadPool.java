@@ -28,18 +28,24 @@ public class ThreadPool {
 	}
 	
 	private class PoolThread extends Thread {
-		Runnable task;
+		Task task;
 		
 		@Override
 		public void run() {
 			while(numLattices > 1) {
 				synchronized (q) {
-					while(q.size() < 2) {
+					while(q.isEmpty()) {
 						try {
 							q.wait();
 						} catch (InterruptedException e) {
 							System.out.println(e.getMessage());
 						}
+					}
+					
+					task = q.poll(); 
+					
+					if (task.isHull()) {
+						
 					}
 					
 					// Could be a better solution using take()
