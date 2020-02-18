@@ -2,23 +2,24 @@
 public class Task implements Runnable {
 	
 	private final IntegerLattice left, right;
-	private final ThreadPool pool;
+	private ThreadPool pool;
 	private boolean isHull; 
 	
-	public Task(IntegerLattice left, ThreadPool pool) {
+	
+	public Task(IntegerLattice left) {
 		this.left = left; 
 		this.right = null;
-		this.pool = pool;
 		this.isHull = false;
 	}
 	
-	public Task(IntegerLattice left, ThreadPool pool, boolean isHull) {
+	private Task(IntegerLattice left, ThreadPool pool, boolean isHull) {
 		this.left = left; 
 		this.right = null;
 		this.pool = pool;
 		this.isHull = isHull;
 	}
 	
+
 	private Task(IntegerLattice left, IntegerLattice right, ThreadPool pool) {
 		this.left = left; 
 		this.right = right;
@@ -31,7 +32,7 @@ public class Task implements Runnable {
 	public void run() { 
 		
 		if (isHull) {
-			pool.runTask(new Task(ConvexHull.combineHull(left, right), pool));
+			pool.runTask(new Task(ConvexHull.combineHull(left, right), pool, true));
 	
 		} else {
 			pool.runTask(new Task(ConvexHull.convexHull(left),pool, true));
@@ -39,9 +40,17 @@ public class Task implements Runnable {
 			
 	}
 	
+	public void setPool(ThreadPool pool) {
+		this.pool = pool;
+	}
+	
 	
 	public IntegerLattice getLattice() {
 		return this.left;
+	}
+	
+	public IntegerLattice getLatticeR() {
+		return this.right;
 	}
 	
 	public Task combineTasks(Task t) {

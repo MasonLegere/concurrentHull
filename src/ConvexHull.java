@@ -5,29 +5,58 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.LinkedBlockingQueue;
 public class ConvexHull {
 
 	
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException, InterruptedException {
 		
 		ArrayList<Point> points = readFile("ConvexHullInput.txt");
-		points.sort(Comparator.comparing(Point:: getX));
-		ArrayList<Point> points1 =  new ArrayList<Point>( points.subList(0, points.size()/2)); 
-		ArrayList<Point> points2 =  new ArrayList<Point>( points.subList(points.size()/2 + 1,points.size())); 
 		
+	    ThreadPool pool = new ThreadPool(2,4,partitionLattice(points,4));
 		
+		points = pool.getResult().getLattice();
 		
-//		points1 = convexHull(points1);
-//		points2 = convexHull(points2);
-//		points = combineHull(points1, points2); 
-//		
 		for (int i = 0; i < points.size(); i++) {
 			System.out.println(points.get(i)); 
 		}
 		
 	}
 	
-	private static ArrayList<Point> readFile(String fileName) throws IOException{
+	private static LinkedBlockingQueue<Task> partitionLattice(ArrayList<Point> points, int numPartitions) {
+		int intervalSize = points.size()/numPartitions; 
+		IntegerLattice tempLattice;
+		ArrayList<Point> tempList;
+		int lowerBound = 0, upperBound = 0;
+		LinkedBlockingQueue<Task> q = new LinkedBlockingQueue<Task>();
+		
+		if (intervalSize < 3) {
+			System.out.println("Not possible to find the convex hull using the required specifications");
+			System.exit(0);
+		}
+		
+		points.sort(Comparator.comparing(Point::getX)); // sort array list by X-values
+		
+		for (int i = 0; i < numPartitions - 1; i++) {
+			lowerBound = i * intervalSize;
+			upperBound = (i + 1) * intervalSize;
+			tempList = new ArrayList<Point>(points.subList(lowerBound, upperBound));
+			tempLattice = new IntegerLattice(points.get(lowerBound).getX(), points.get(upperBound - 1).getX(), tempList);	
+			q.add(new Task(tempLattice));
+			
+		}
+		
+		tempList = new ArrayList<Point>(points.subList(upperBound, points.size()));
+		tempLattice = new IntegerLattice(points.get(upperBound).getX(), points.get(points.size() - 1).getX(), tempList);
+		q.add(new Task(tempLattice));
+			
+		return q;
+		
+	}
+	
+	
+	
+	private static ArrayList<Point> readFile(String fileName) throws IOException {
 			
 		BufferedReader reader = new BufferedReader(new FileReader(fileName));
 		ArrayList<Point> points = new ArrayList<Point>();
@@ -46,7 +75,7 @@ public class ConvexHull {
 	}
 	// 
 	public static IntegerLattice combineHull(IntegerLattice leftLattice, IntegerLattice rightLattice){
-		
+		System.out.println("merging Hull");
 		ArrayList<Point> left = leftLattice.getLattice();
 		ArrayList<Point> right = rightLattice.getLattice();
 		
@@ -128,7 +157,7 @@ public class ConvexHull {
 	}
 	
 	public static IntegerLattice convexHull(IntegerLattice lattice){
-		
+		System.out.println("entered convex Hull");
 		ArrayList<Point> points = lattice.getLattice();
 		if (points.size() < 3) return null; 
 		
@@ -156,7 +185,8 @@ public class ConvexHull {
        
         } while (p != l);
         
-		return new IntegerLattice(lattice.getLeftPoint(), lattice.getRightPoint(), points);
+        System.out.println("found Hull");
+		return new IntegerLattice(lattice.getLeftPoint(), lattice.getRightPoint(), hull);
 	}
 	
 	// 0 --> p, q and r are colinear 
