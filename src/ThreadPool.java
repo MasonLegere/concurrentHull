@@ -35,16 +35,13 @@ public class ThreadPool {
 
 	private class PoolThread extends Thread {
 		Task task;
-		boolean flag = true;
 
 		@Override
 		public void run() {
 			while (!exit) {
 				task = null;
 				synchronized (q) {
-					System.out.println(q.size());
 					while (!exit && q.isEmpty()) {
-						flag = false;
 						try {
 							q.wait();
 						} catch (InterruptedException e) {
@@ -83,6 +80,7 @@ public class ThreadPool {
 
 				if (numLattices == 1) {
 					exit = true;
+					
 					synchronized (q) {
 						q.notifyAll();
 					}

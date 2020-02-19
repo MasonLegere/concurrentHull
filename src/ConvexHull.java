@@ -3,24 +3,121 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
+import java.util.Scanner;
 import java.util.concurrent.LinkedBlockingQueue;
+
+import org.jfree.data.xy.XYSeries;
 
 public class ConvexHull {
 
-	public static void main(String[] args) throws IOException, InterruptedException {
+	public static void main(String[] args) throws IOException {
 
-		ArrayList<Point> points = readFile("ConvexHullInput.txt");
+		String line; // buffer for user input
+		int[] numThreads; // numThreads[i] <- number of threads to use for ith convex hull
+		int numPoints, numThread;
+		ThreadPool pool = null;
+		Scanner scanner = new Scanner(System.in);
 
-		ThreadPool pool = new ThreadPool(3, 4, partitionLattice(points, 4));
+		System.out.println(" > Would you like to find the convex hull of points specified in a file (Y/N)");
+		line = scanner.nextLine().toUpperCase();
 
-		points = pool.getResult().getLattice();
+		if (line.equals("Y")) {
+			
+			System.out.println(" > Please enter the relative path of the file");
 
-		for (int i = 0; i < points.size(); i++) {
-			System.out.println(points.get(i));
+			line = scanner.nextLine();
+			ArrayList<Point> points = readFile(line);
+			
+			System.out.println(
+					" > Enter a positive integer to specifiy the number of threads to be used.");
+			line = scanner.nextLine();
+			numThread = Integer.parseInt(line);
+			try {
+				pool = new ThreadPool(numThread, 2 * numThread, partitionLattice(points, 2 * numThread));
+			}
+			catch (InterruptedException e) {
+				System.out.println(e.getMessage());
+			}
+			
+			points = pool.getResult().getLattice();
+			
+			for (int i = 0; i < points.size(); i++) {
+				System.out.println(points.get(i));
+			}
+			 
+			
 		}
 
+		else if (line.equals("N")) {
+			
+			System.out.println(" > Enter a postive integer to specify number of points");
+			line = scanner.nextLine();
+			numPoints = Integer.parseInt(line);
+
+			System.out.println(
+					" > Enter a comma delimited list of postive integers to specifiy the number of threads to be used.");
+			line = scanner.nextLine();
+			numThreads = Arrays.stream(line.split(",")).mapToInt(Integer::parseInt).toArray();
+			scanner.close();
+			XYSeries times = runSimulation(numPoints, numThreads);
+			LinePlotDisplay plot = new LinePlotDisplay(times);
+			plot.setVisible(true);
+			
+		} else {
+			
+			System.out.println(" > Inavlid input - program terminating");
+			System.exit(1);
+			
+		}
+
+
+	}
+
+	private static XYSeries runSimulation(int numPoints, int[] numThreads) {
+
+		XYSeries times = new XYSeries("Running Times");
+		long initialTime, finalTime, timeElapsed;
+		ThreadPool pool = null;
+
+		ArrayList<Integer> pointsX = new ArrayList<Integer>();
+		ArrayList<Integer> pointsY = new ArrayList<Integer>();
+		ArrayList<Point> points = new ArrayList<Point>();
+
+		for (int i = 0; i < numPoints; i++) {
+			pointsX.add(new Integer(i));
+		}
+
+		for (int i = 0; i < numPoints; i++) {
+			pointsY.add(new Integer(i));
+		}
+
+		Collections.shuffle(pointsX);
+		Collections.shuffle(pointsX);
+
+		for (int i = 0; i < numPoints; i++) {
+			points.add(new Point(pointsX.get(i), pointsY.get(i)));
+		}
+
+		for (int i : numThreads) {
+			initialTime = System.currentTimeMillis();
+
+			try {
+				pool = new ThreadPool(i, 2 * i, partitionLattice(points, 2 * i));
+			} catch (InterruptedException e) {
+				System.out.println(e.getMessage());
+			}
+
+			pool.getResult().getLattice();
+			finalTime = System.currentTimeMillis();
+			timeElapsed = finalTime - initialTime;
+			System.out.println("Number of Threads: " + i + "  ---- Time Taken: " + timeElapsed + " (ms)");
+			times.add(i, timeElapsed);
+		}
+
+		return times;
 	}
 
 	private static LinkedBlockingQueue<Task> partitionLattice(ArrayList<Point> points, int numPartitions) {
@@ -70,10 +167,12 @@ public class ConvexHull {
 			input = reader.readLine();
 		}
 
+		reader.close();
 		return points;
 	}
 
 	public static IntegerLattice combineHull(IntegerLattice leftLattice, IntegerLattice rightLattice) {
+
 		ArrayList<Point> left = leftLattice.getLattice();
 		ArrayList<Point> right = rightLattice.getLattice();
 
@@ -163,7 +262,7 @@ public class ConvexHull {
 	}
 
 	public static IntegerLattice convexHull(IntegerLattice lattice) {
-		System.out.println("entered convex Hull");
+
 		ArrayList<Point> points = lattice.getLattice();
 		if (points.size() < 3)
 			return null;
@@ -178,7 +277,6 @@ public class ConvexHull {
 		int p = l, q;
 		do {
 			hull.add(points.get(p));
-
 			q = (p + 1) % points.size();
 
 			for (int i = 0; i < points.size(); i++) {
@@ -192,7 +290,6 @@ public class ConvexHull {
 
 		} while (p != l);
 
-		System.out.println("found Hull");
 		return new IntegerLattice(lattice.getLeftPoint(), lattice.getRightPoint(), hull);
 	}
 
@@ -202,5 +299,7 @@ public class ConvexHull {
 	public static int orient(Point p, Point q, Point r) {
 		return (q.getY() - p.getY()) * (r.getX() - q.getX()) - (q.getX() - p.getX()) * (r.getY() - q.getY());
 	}
+	
+	
 
 }

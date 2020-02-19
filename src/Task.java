@@ -50,15 +50,8 @@ public class Task implements Runnable {
 	}
 
 	public Task combineTasks(Task t) {
-		int X = this.left.getRightPoint();
 
-		// Differentiate which is the left and right lattice
-		// Note that (t.getLattice().getLeftPoint() == X) == false for all lattices
-		if (X < t.getLattice().getLeftPoint()) {
-			return new Task(this.getLattice(), t.getLattice(), this.pool);
-		} else {
-			return new Task(t.getLattice(), this.getLattice(), this.pool);
-		}
+		return new Task(this.getLattice(), t.getLattice(), this.pool);
 	}
 
 	public boolean isHull() {
