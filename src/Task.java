@@ -1,60 +1,60 @@
 
 public class Task implements Runnable {
 
-	private final IntegerLattice left, right;
-	private ThreadPool pool;
-	private boolean isHull;
+  private final IntegerLattice left, right;
+  private ThreadPool pool;
+  private boolean isHull;
 
-	public Task(IntegerLattice left) {
-		this.left = left;
-		this.right = null;
-		this.isHull = false;
-	}
+  public Task(IntegerLattice left) {
+    this.left = left;
+    this.right = null;
+    this.isHull = false;
+  }
 
-	private Task(IntegerLattice left, ThreadPool pool, boolean isHull) {
-		this.left = left;
-		this.right = null;
-		this.pool = pool;
-		this.isHull = isHull;
-	}
+  private Task(IntegerLattice left, ThreadPool pool, boolean isHull) {
+    this.left = left;
+    this.right = null;
+    this.pool = pool;
+    this.isHull = isHull;
+  }
 
-	private Task(IntegerLattice left, IntegerLattice right, ThreadPool pool) {
-		this.left = left;
-		this.right = right;
-		this.pool = pool;
-		this.isHull = true;
-	}
+  private Task(IntegerLattice left, IntegerLattice right, ThreadPool pool) {
+    this.left = left;
+    this.right = right;
+    this.pool = pool;
+    this.isHull = true;
+  }
 
-	@Override
-	public void run() {
+  @Override
+  public void run() {
 
-		if (isHull) {
-			pool.runTask(new Task(ConvexHull.combineHull(left, right), pool, true));
+    if (isHull) {
+      pool.runTask(new Task(ConvexHull.combineHull(left, right), pool, true));
 
-		} else {
-			pool.runTask(new Task(ConvexHull.convexHull(left), pool, true));
-		}
+    } else {
+      pool.runTask(new Task(ConvexHull.convexHull(left), pool, true));
+    }
 
-	}
+  }
 
-	public void setPool(ThreadPool pool) {
-		this.pool = pool;
-	}
+  public void setPool(ThreadPool pool) {
+    this.pool = pool;
+  }
 
-	public IntegerLattice getLattice() {
-		return this.left;
-	}
+  public IntegerLattice getLattice() {
+    return this.left;
+  }
 
-	public IntegerLattice getLatticeR() {
-		return this.right;
-	}
+  public IntegerLattice getLatticeR() {
+    return this.right;
+  }
 
-	public Task combineTasks(Task t) {
+  public Task combineTasks(Task t) {
 
-		return new Task(this.getLattice(), t.getLattice(), this.pool);
-	}
+    return new Task(this.getLattice(), t.getLattice(), this.pool);
+  }
 
-	public boolean isHull() {
-		return this.isHull;
-	}
+  public boolean isHull() {
+    return this.isHull;
+  }
 }
