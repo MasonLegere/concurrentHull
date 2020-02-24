@@ -11,6 +11,9 @@ import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
+/** 
+ *  Creates JFrame used for plotting the final results
+ * */ 
 public class LinePlotDisplay extends JFrame {
 
   private XYSeries data;

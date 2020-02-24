@@ -1,4 +1,9 @@
 
+/**
+ * This class simply represents a lattice points under the Euclidean basis of R^2. 
+ * In other words a data type for the points (x,y).
+ * */
+
 public class Point {
 
   private int x;
