@@ -31,7 +31,9 @@ public class Point {
     this.x = x;
     this.y = y;
   }
-
+sychronized {
+  
+}
   @Override
   public String toString() {
     return "(" + this.x + "," + this.y + ")";
