@@ -81,6 +81,7 @@ public class ThreadPool {
               q.wait();
             } catch (InterruptedException e) {
               System.out.println(e.getMessage());
+              System.out.println("h3");
             }
 
           }
@@ -94,18 +95,18 @@ public class ThreadPool {
                 q.wait();
               } catch (InterruptedException e) {
                 System.out.println(e.getMessage());
+                System.out.println("h2");
               }
             }
 
-            
+
             task = q.poll();
             /*
-             * If the first element on the queue is already a convex hull
-             * then wait until a new element is added. If the need element that 
-             * was added is also a convex hull then merge them. If not, 
-             * add the convex hull back to the queue and find the convex
-             * hull of the new element. 
-             * */
+             * If the first element on the queue is already a convex hull then wait until a new
+             * element is added. If the need element that was added is also a convex hull then merge
+             * them. If not, add the convex hull back to the queue and find the convex hull of the
+             * new element.
+             */
             if (!exit) {
               if (q.peek().isHull()) {
                 task = task.combineTasks(q.poll());
@@ -115,9 +116,8 @@ public class ThreadPool {
                 task = q.poll();
                 task.setPool(getPool());
               }
-            }
-            else {
-              q.add(task); 
+            } else {
+              q.add(task);
             }
 
           } else {
@@ -125,17 +125,19 @@ public class ThreadPool {
             task.setPool(getPool());
           }
 
-        }
-
-        try {
-          if (task != null) {
-            task.run();
+        
+        } 
+          try {
+            if (!exit && task != null) {
+              task.run();
+            }
+          } catch (RuntimeException e) {
+            e.printStackTrace();
+            System.out.println(e.getMessage());
+            System.out.println("h1");
           }
-        } catch (RuntimeException e) {
-          System.out.println(e.getMessage());
-        }
-
-        // If there is only on lattice left then all lattices have been combined 
+        
+        // If there is only on lattice left then all lattices have been combined
         // set the flag to true to exit and notify all the threads.
         if (numLattices == 1) {
           exit = true;
@@ -155,12 +157,12 @@ public class ThreadPool {
     }
   }
 
-  /** 
-   *  Returns the lattice from the last
-   * */
+  /**
+   * Returns the lattice from the last
+   */
   public IntegerLattice getResult() {
     return q.poll().getLattice();
   }
-  
-  
+
+
 }

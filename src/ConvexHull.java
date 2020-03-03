@@ -261,7 +261,6 @@ public class ConvexHull {
   public static IntegerLattice combineHull(IntegerLattice leftLattice,
       IntegerLattice rightLattice) {
     
-    System.out.println("Merging Hulls");
 
     ArrayList<Point> left = leftLattice.getLattice();
     ArrayList<Point> right = rightLattice.getLattice();
@@ -349,7 +348,6 @@ public class ConvexHull {
       mergedHull.add(right.get(leftTp));
     }
 
-     System.out.println("Merging Complete"); 
     return new IntegerLattice(leftLattice.getLeftPoint(), rightLattice.getRightPoint(), mergedHull);
 
   }
@@ -368,7 +366,6 @@ public class ConvexHull {
    * 
    * */
   public static IntegerLattice convexHull(IntegerLattice lattice) {
-    System.out.println("Finding Convex Hull");
     ArrayList<Point> points = lattice.getLattice();
     if (points.size() < 3)
       return null;
@@ -394,7 +391,7 @@ public class ConvexHull {
       p = q;
 
     } while (p != l);
-    System.out.println("Finished finding hull");
+
     return new IntegerLattice(lattice.getLeftPoint(), lattice.getRightPoint(), hull);
   }
 
