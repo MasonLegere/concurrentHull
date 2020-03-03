@@ -97,7 +97,7 @@ public class ThreadPool {
               }
             }
 
-
+            
             task = q.poll();
             /*
              * If the first element on the queue is already a convex hull
@@ -106,15 +106,19 @@ public class ThreadPool {
              * add the convex hull back to the queue and find the convex
              * hull of the new element. 
              * */
-            if (q.peek().isHull()) {
-              task = task.combineTasks(q.poll());
-              numLattices--;
-            } else {
-              q.add(task);
-              task = q.poll();
-              task.setPool(getPool());
+            if (!exit) {
+              if (q.peek().isHull()) {
+                task = task.combineTasks(q.poll());
+                numLattices--;
+              } else {
+                q.add(task);
+                task = q.poll();
+                task.setPool(getPool());
+              }
             }
-
+            else {
+              q.add(task); 
+            }
 
           } else {
             task = q.poll();
