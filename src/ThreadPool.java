@@ -81,7 +81,6 @@ public class ThreadPool {
               q.wait();
             } catch (InterruptedException e) {
               System.out.println(e.getMessage());
-              System.out.println("h3");
             }
 
           }
@@ -95,7 +94,6 @@ public class ThreadPool {
                 q.wait();
               } catch (InterruptedException e) {
                 System.out.println(e.getMessage());
-                System.out.println("h2");
               }
             }
 
@@ -125,18 +123,16 @@ public class ThreadPool {
             task.setPool(getPool());
           }
 
-        
-        } 
-          try {
-            if (!exit && task != null) {
-              task.run();
-            }
-          } catch (RuntimeException e) {
-            e.printStackTrace();
-            System.out.println(e.getMessage());
-            System.out.println("h1");
+
+        }
+        try {
+          if (!exit && task != null) {
+            task.run();
           }
-        
+        } catch (RuntimeException e) {
+          System.out.println(e.getMessage());
+        }
+
         // If there is only on lattice left then all lattices have been combined
         // set the flag to true to exit and notify all the threads.
         if (numLattices == 1) {
