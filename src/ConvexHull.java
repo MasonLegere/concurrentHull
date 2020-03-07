@@ -277,6 +277,7 @@ public class ConvexHull {
     boolean flag = false;
     ArrayList<Point> mergedHull = new ArrayList<Point>();
 
+    // Move through all left points in the hull and select the left most pivot element
     for (int i = 1; i < left.size(); i++) {
       if (left.get(i).getX() > left.get(rightMost).getX()) {
         rightMost = i;
@@ -292,6 +293,7 @@ public class ConvexHull {
     leftTp = leftMost;
     rightTp = rightMost;
 
+    // Move through all the elements in the right hull and find the right most pivot element
     while (!flag) {
       flag = true;
 
@@ -313,6 +315,7 @@ public class ConvexHull {
     rightTp = rightMost;
     flag = false;
 
+    // Using the pivots, select all elements that do not align in the pivot
     while (!flag) {
 
       flag = true;
@@ -377,6 +380,8 @@ public class ConvexHull {
       if (points.get(i).getX() < points.get(l).getX())
         l = i;
 
+    // Selecting left pivot shuffle selecting "optimal" outside points 
+    // those is, points that minimal orientations with pivots 
     int p = l, q;
     do {
       hull.add(points.get(p));
@@ -404,6 +409,7 @@ public class ConvexHull {
   *  @param r Point (x,y) in space 
   *  @return integer value representing the resulting orientation in space. 
   * */
+  // Really the cross product in R^2
   public static int orient(Point p, Point q, Point r) {
     return (q.getY() - p.getY()) * (r.getX() - q.getX())
         - (q.getX() - p.getX()) * (r.getY() - q.getY());
