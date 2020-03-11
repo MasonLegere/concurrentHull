@@ -63,12 +63,10 @@ public class ConvexHull {
           .println(" > Enter a positive integer to specifiy the number of threads to be used.");
       line = scanner.nextLine();
       numThread = Integer.parseInt(line);
-      try {
-        pool = new ThreadPool(numThread, 2 * numThread, partitionLattice(points, 2 * numThread));
-      } catch (InterruptedException e) {
-        System.out.println(e.getMessage());
-      }
 
+      pool = new ThreadPool(numThread, 2 * numThread);
+      pool.initPool(partitionLattice(points, 2 * numThread, pool));
+      
       points = pool.getResult().getLattice();
 
       for (int i = 0; i < points.size(); i++) {
@@ -137,11 +135,8 @@ public class ConvexHull {
     for (int i : numThreads) {
       initialTime = System.currentTimeMillis();
 
-      try {
-        pool = new ThreadPool(i, 2 * i, partitionLattice(points, 2 * i));
-      } catch (InterruptedException e) {
-        System.out.println(e.getMessage());
-      }
+      pool = new ThreadPool(i, 2 * i);
+      pool.initPool(partitionLattice(points, 2 * i, pool));
 
       pool.getResult().getLattice();
       finalTime = System.currentTimeMillis();
@@ -169,7 +164,8 @@ public class ConvexHull {
    * 
    * */
   private static LinkedBlockingQueue<Task> partitionLattice(ArrayList<Point> points,
-      int numPartitions) {
+      int numPartitions, ThreadPool pool) {
+    
     int intervalSize = points.size() / numPartitions;
     IntegerLattice tempLattice;
     ArrayList<Point> tempList;
@@ -194,14 +190,14 @@ public class ConvexHull {
       tempList = new ArrayList<Point>(points.subList(lowerBound, upperBound));
       tempLattice = new IntegerLattice(points.get(lowerBound).getX(),
           points.get(upperBound - 1).getX(), tempList);
-      q.add(new Task(tempLattice)); // add new task to the queue
+      q.add(new ConvexTask(tempLattice, pool, false)); // add new task to the queue
      
     }
 
     tempList = new ArrayList<Point>(points.subList(upperBound, points.size()));
     tempLattice = new IntegerLattice(points.get(upperBound).getX(),
         points.get(points.size() - 1).getX(), tempList);
-    q.add(new Task(tempLattice));
+    q.add(new ConvexTask(tempLattice, pool, false));
 
     return q;
 
@@ -261,6 +257,7 @@ public class ConvexHull {
   public static IntegerLattice combineHull(IntegerLattice leftLattice,
       IntegerLattice rightLattice) {
     
+   System.out.println("combineHull");
 
     ArrayList<Point> left = leftLattice.getLattice();
     ArrayList<Point> right = rightLattice.getLattice();
@@ -369,6 +366,8 @@ public class ConvexHull {
    * 
    * */
   public static IntegerLattice convexHull(IntegerLattice lattice) {
+    
+    System.out.println("convexHull");
     ArrayList<Point> points = lattice.getLattice();
     if (points.size() < 3)
       return null;
