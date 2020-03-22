@@ -14,7 +14,7 @@ public class ConvexTask extends Task {
   @Override
   public void run() {
     Task task = new ConvexTask(ConvexHull.convexHull(leftLattice), this.pool, true); 
-    this.pool.runTask(task); 
+    this.pool.addTask(task);
   }
   
  

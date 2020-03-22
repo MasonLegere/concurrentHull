@@ -15,7 +15,7 @@ public class MergeTask extends Task{
   @Override
   public void run() {
     Task task = new ConvexTask(ConvexHull.combineHull(leftLattice, rightLattice), this.pool, true); 
-    pool.runTask(task);  
+    pool.addTask(task);
   }
   
   

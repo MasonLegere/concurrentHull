@@ -1,3 +1,5 @@
+import java.util.Objects;
+import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
@@ -22,7 +24,7 @@ public class ThreadPool {
   /**
    * Tasks added and removed from the queue in a synchronized manner
    */
-  private LinkedBlockingQueue<Task> q;
+  private volatile Queue<Task> q;
 
   /**
    * Number of lattices initially on the queue during initialization
@@ -33,11 +35,27 @@ public class ThreadPool {
    */
   private volatile boolean exit;
 
+  /**
+   * Mutex lock used for synchronization of the task queue
+   * */
+  private Lock lock;
+
+  /**
+   * Integer array used for synchronizing waiting threads
+   *  0 := thread is not waiting
+   *  1 := thread is waiting
+   *  2 := waiting for the addition of a second item (prioritized event)
+   * */
+  private int[] threadStates;
+
+
   public ThreadPool(int numThreads, int numLattices) {
     this.numThreads = numThreads;
     this.numLattices = numLattices;
     this.exit = false;
     this.q = null;
+    this.lock = new Lock(numThreads + 1);
+    threadStates = new int[numThreads];
     
   }
 
@@ -48,7 +66,7 @@ public class ThreadPool {
     try {
       // start and join all threads.
       for (int i = 0; i < this.numThreads; i++) {
-        threads[i] = new PoolThread();
+        threads[i] = new PoolThread(i);
         threads[i].start();
       }
   
@@ -57,26 +75,94 @@ public class ThreadPool {
       }
     }
     catch (InterruptedException e) {
-      System.out.println(e.getMessage());
+      e.printStackTrace();
     }
   }
   
   
 
   /**
-   * Adds the task provided to the queue and notifys a thread that a new task has been added to the
+   * Adds the task provided to the queue and notifies a thread that a new task has been added to the
    * queue.
    * 
    * @param task The task to be added to the queue
    */
-  public void runTask(Task task) {
-    synchronized (q) {
+ public void addTask(Task task) {
+
+      lock.lock(numThreads);
       q.add(task);
-      q.notify();
+
+      // Wake up a thread. First priority given to threads
+      // that are waiting for the addition of the two elements.
+      for (int j = 2; j < 0; j--) {
+        for (int i = 0; i < numThreads; i++) {
+          if (threadStates[i] == j) {
+            threadStates[i] = 0;
+            i = numThreads;
+            j = 0;
+          }
+        }
+      }
+
+
+      lock.unlock(numThreads);
+
+  }
+
+  private Task getTask(int threadNum){
+    Task task = null;
+
+    if (!exit && q.isEmpty()) {
+      threadStates[threadNum] = 1;
+      while (threadStates[threadNum] == 1){
+        // Busy wait
+      }
     }
+
+    if (!exit && !q.peek().isHull()) {
+      lock.lock(threadNum);
+      task = q.poll();
+    }
+    else {
+
+      if (!exit && q.size() < 2) {
+
+        threadStates[threadNum] = 2;
+        while (threadStates[threadNum] == 2){
+          // Busy wait
+        }
+      }
+      lock.unlock(threadNum);
+      lock.lock(threadNum);
+      task = q.poll();
+
+      if (!exit) {
+        if (q.peek().isHull) {
+          task = new MergeTask(task, Objects.requireNonNull(q.poll()));
+          numLattices--;
+        } else {
+          q.add(task);
+          task = q.poll();
+        }
+      } else {
+        q.add(task);
+      }
+
+    }
+    lock.unlock(threadNum);
+    System.out.println(numLattices);
+    if (task == null)
+      System.out.println("DANGER");
+    return task;
   }
 
   private class PoolThread extends Thread {
+
+    private int threadNum;
+
+    public PoolThread(int threadNum){
+      this.threadNum = threadNum;
+    }
 
     /**
      * Pulls tasks off the queue and calls the corresponding functions to either find the convex
@@ -88,71 +174,30 @@ public class ThreadPool {
       // While there is still more than one lattice remaining unmerged...
       while (!exit) {
         Task task = null;
-        synchronized (q) {
-          
-          System.out.println("here1");
-          while (!exit && q.isEmpty()) {
-            try {
-              q.wait();
-            } catch (InterruptedException e) {
-              System.out.println(e.getMessage());
-            }
 
-          }
+        task = getTask(threadNum);
 
-          assert q.peek() != null;
-          if (!q.peek().isHull()) {
-            System.out.println("here2");
-            task = q.poll();     
-          }   
-          else {
-            System.out.println("here3");
-            while (!exit && q.size() < 2) {
-              try {
-                q.wait();
-              } catch (InterruptedException e) {
-                System.out.println(e.getMessage());
-              }
-            }
-
-            task = q.poll();
-            System.out.println("here4");
-            if (!exit) {
-              if (q.peek().isHull) {
-                task = new MergeTask(task,q.poll());
-                numLattices--;
-              } else {
-                q.add(task);
-                task = q.poll();
-              }
-            } else {
-              q.add(task);
-            }
-
-          } 
-          System.out.println("here5");
-          if (numLattices == 1) {
-            exit = true;
-            q.notifyAll();
-          }
-          
-          System.out.println(q.size());
-        }
-        
         try {
-          if (!exit) {
+          if (task != null && !exit) {
+            System.out.println(task);
             task.run();
+
           }
         } catch (RuntimeException e) {
-          System.out.println(e.getMessage());
+          e.printStackTrace();
         }
-
-        // If there is only on lattice left then all lattices have been combined
-        // set the flag to true to exit and notify all the threads. 
 
       }
 
+      if (numLattices == 1){
+        exit = true;
+      }
+
     }
+
+
+
+
 
   }
 
@@ -162,6 +207,10 @@ public class ThreadPool {
   public IntegerLattice getResult() {
     return q.poll().getLattice();
   }
+
+
+
+
 
 
 }
