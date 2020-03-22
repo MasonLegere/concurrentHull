@@ -99,7 +99,8 @@ public class ThreadPool {
             }
 
           }
-     
+
+          assert q.peek() != null;
           if (!q.peek().isHull()) {
             System.out.println("here2");
             task = q.poll();     
