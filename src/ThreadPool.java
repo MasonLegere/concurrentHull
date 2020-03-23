@@ -61,7 +61,7 @@ public class ThreadPool {
    * assigns initial tasks to the queue.
    *
    * @param q Initial tasks to be completed.
-   * */
+   */
   public void initPool(Queue<Task> q) {
     this.q = q;
     threads = new PoolThread[this.numThreads];
@@ -166,6 +166,7 @@ public class ThreadPool {
         if (!exit && !q.isEmpty()) {
           assert q.peek() != null;
           if (q.peek().isHull) {
+
             task = new MergeTask(task, q.poll());
             numLattices--;
 

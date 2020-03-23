@@ -61,7 +61,7 @@ public class Lock {
 
     /*
     *  Returns the lowest priority index within the currently waiting threads. That is, the maximum
-    *  index. Newly created threads will be assigned this index plus one. 
+    *  index. Newly created threads will be assigned this index plus one.
     * */
     public int maxID(){
         int max = c[0];
