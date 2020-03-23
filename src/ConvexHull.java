@@ -256,8 +256,7 @@ public class ConvexHull {
    * */
   public static IntegerLattice combineHull(IntegerLattice leftLattice,
       IntegerLattice rightLattice) {
-    
-   System.out.println("combineHull");
+
 
     ArrayList<Point> left = leftLattice.getLattice();
     ArrayList<Point> right = rightLattice.getLattice();
@@ -367,7 +366,7 @@ public class ConvexHull {
    * */
   public static IntegerLattice convexHull(IntegerLattice lattice) {
     
-    System.out.println("convexHull");
+
     ArrayList<Point> points = lattice.getLattice();
     if (points.size() < 3)
       return null;
