@@ -5,11 +5,13 @@
  *  Namely, finding the convex hull of a set of points 
  *  and merging two convex hulls
  * */
-public class Task implements Runnable{
+public abstract class Task implements Runnable{
 
   protected IntegerLattice leftLattice; 
   protected ThreadPool pool; 
   protected boolean isHull;
+
+
   
   public Task(IntegerLattice leftLattice, ThreadPool pool, boolean isHull) {
       this.leftLattice = leftLattice;
@@ -25,7 +27,6 @@ public class Task implements Runnable{
     return this.isHull;
   }
 
-  public void run() {
-  }
-  
+  public abstract void run();
+
 }

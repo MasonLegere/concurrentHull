@@ -11,39 +11,38 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import org.jfree.data.xy.XYSeries;
 
-/** 
- * This class consists exclusively of static methods that operate IntegerLattices or 
- * are helper functions used for the development of the initial data. It functional 
- * objective is to find the convex hull of either user specified points or an arbitary
- * amount of user specified points. This is done through first sorting the list of 
- * lattice points with respect to the X-Coordinate and dividing the list into sublists. 
- * 
- * The convex hull of each sublist is found separately using the Jarvis March algorithm. 
- * These disjoint lattice sets are then merged together in order to create the total convex
- * hull. 
- * */
+/**
+ * This class consists exclusively of static methods that operate IntegerLattices or are helper
+ * functions used for the development of the initial data. It functional objective is to find the
+ * convex hull of either user specified points or an arbitary amount of user specified points. This
+ * is done through first sorting the list of lattice points with respect to the X-Coordinate and
+ * dividing the list into sublists.
+ * <p>
+ * The convex hull of each sublist is found separately using the Jarvis March algorithm. These
+ * disjoint lattice sets are then merged together in order to create the total convex hull.
+ */
 
 public class ConvexHull {
 
   public static void main(String[] args) throws IOException {
 
-    /* 
-     * line  
-     *  - buffer used for user input 
-     * numThreads[i]    
-     *  - number of threads to use for ith  convex hull 
-     *    if the program is ran as a simulation and not from user input. 
-     * pool   
-     *  - the thread pool used for synchronization  
-     * numPoints 
-     *  - number of points to be created for the simulation 
-     * numThread 
+    /*
+     * line
+     *  - buffer used for user input
+     * numThreads[i]
+     *  - number of threads to use for ith  convex hull
+     *    if the program is ran as a simulation and not from user input.
+     * pool
+     *  - the thread pool used for synchronization
+     * numPoints
+     *  - number of points to be created for the simulation
+     * numThread
      *  - number of threads to be used for provided user data
-     *   
+     *
      * */
-    
-    String line;      
-    int[] numThreads;   
+
+    String line;
+    int[] numThreads;
     int numPoints, numThread;
     ThreadPool pool = null;
     Scanner scanner = new Scanner(System.in);
@@ -66,17 +65,16 @@ public class ConvexHull {
 
       pool = new ThreadPool(numThread, 2 * numThread);
       pool.initPool(partitionLattice(points, 2 * numThread, pool));
-      
+
       points = pool.getResult().getLattice();
 
+      // print the results
       for (int i = 0; i < points.size(); i++) {
         System.out.println(points.get(i));
       }
 
 
-    }
-
-    else if (line.equals("N")) {
+    } else if (line.equals("N")) {
 
       System.out.println(" > Enter a postive integer to specify number of points");
       line = scanner.nextLine();
@@ -97,16 +95,14 @@ public class ConvexHull {
       System.exit(0);
 
     }
-
+// test commit
 
   }
 
   /**
-   * 
-   *  @param numPoints  number of lattice points to be created
-   *  @param numThreads number of threads to use for each calculation 
-   *  
-   * */
+   * @param numPoints  number of lattice points to be created
+   * @param numThreads number of threads to use for each calculation
+   */
   private static XYSeries runSimulation(int numPoints, int[] numThreads) {
 
     XYSeries times = new XYSeries("Running Times");
@@ -149,23 +145,21 @@ public class ConvexHull {
   }
 
   /**
-   *    <p>
-   *    Takes in an initial arbitrary set of lattice points and separtes it 
-   *    into a specified number of disjoint sublist such that they are compatible for 
-   *    a DoC approach for convex hull implementation. 
-   *    </p>
-   *    
-   *    @param points The inital lattice points to be partitioned 
-   *    @param numPartitions the number of subLattices to split the original lattice
-   *            into.
-   *    @return The queue containing tasks, where each task contains a sublattice.
-   *    @see Task
-   *    @see IntegerLattice
-   * 
-   * */
+   * <p>
+   * Takes in an initial arbitrary set of lattice points and separtes it into a specified number of
+   * disjoint sublist such that they are compatible for a DoC approach for convex hull
+   * implementation.
+   * </p>
+   *
+   * @param points        The inital lattice points to be partitioned
+   * @param numPartitions the number of subLattices to split the original lattice into.
+   * @return The queue containing tasks, where each task contains a sublattice.
+   * @see Task
+   * @see IntegerLattice
+   */
   private static LinkedBlockingQueue<Task> partitionLattice(ArrayList<Point> points,
       int numPartitions, ThreadPool pool) {
-    
+
     int intervalSize = points.size() / numPartitions;
     IntegerLattice tempLattice;
     ArrayList<Point> tempList;
@@ -191,7 +185,7 @@ public class ConvexHull {
       tempLattice = new IntegerLattice(points.get(lowerBound).getX(),
           points.get(upperBound - 1).getX(), tempList);
       q.add(new ConvexTask(tempLattice, pool, false)); // add new task to the queue
-     
+
     }
 
     tempList = new ArrayList<Point>(points.subList(upperBound, points.size()));
@@ -204,23 +198,15 @@ public class ConvexHull {
   }
 
   /**
-   *    <p>
-   *    Reads in a file specified by the relative fileName to get
-   *    user specified points. Assumes that the input of the file 
-   *    is of the form: 
-   *        x_1 y_1 \n 
-   *        x_2 y_2 \n 
-   *        .
-   *        .
-   *        .
-   *        x_n y_n
-   *    </p>
-   *    
-   *    @param fileName relative path of the file 
-   *    @return List of (x,y) points read from the file
-   *    @throws IOException in the case where there is difficulty opening
-   *            the file
-   * */
+   * <p>
+   * Reads in a file specified by the relative fileName to get user specified points. Assumes that
+   * the input of the file is of the form: x_1 y_1 \n x_2 y_2 \n . . . x_n y_n
+   * </p>
+   *
+   * @param fileName relative path of the file
+   * @return List of (x,y) points read from the file
+   * @throws IOException in the case where there is difficulty opening the file
+   */
   private static ArrayList<Point> readFile(String fileName) throws IOException {
 
     BufferedReader reader = new BufferedReader(new FileReader(fileName));
@@ -240,32 +226,43 @@ public class ConvexHull {
     return points;
   }
 
-  
-  /** 
-   *    <p> This function takes two convex hulls and combines them together. 
-   *        For algorithm description see:
-   *        <a href="https://www.geeksforgeeks.org/convex-hull-using-divide-and-conquer-algorithm/">Merge Algorithm</a>       
-   *    </p>
-   *    
-   *    @param leftLattice Set of integer lattice points representing previously found convex hull 
-   *                       such that the x-coordinate of each point is less than each x-coordinate 
-   *                       in rightLattice.
-   *    @param rightLattice Set of integer lattice points representing previously found convex hull 
-   *    @return The combined integer lattice that represents the convex hull of the original combined
-   *            points
-   * */
+
+  /**
+   * <p> This function takes two convex hulls and combines them together.
+   * For algorithm description see:
+   * <a href="https://www.geeksforgeeks.org/convex-hull-using-divide-and-conquer-algorithm/">Merge
+   * Algorithm</a>
+   * </p>
+   *
+   * @param leftLattice  Set of integer lattice points representing previously found convex hull
+   *                     such that the x-coordinate of each point is less than each x-coordinate in
+   *                     rightLattice.
+   * @param rightLattice Set of integer lattice points representing previously found convex hull
+   * @return The combined integer lattice that represents the convex hull of the original combined
+   * points
+   */
   public static IntegerLattice combineHull(IntegerLattice leftLattice,
       IntegerLattice rightLattice) {
-    
-   System.out.println("combineHull");
 
-    ArrayList<Point> left = leftLattice.getLattice();
-    ArrayList<Point> right = rightLattice.getLattice();
+    boolean leftOverlap = leftLattice.getLeftPoint() < rightLattice.getRightPoint();
+    boolean rightOverlap = rightLattice.getLeftPoint() < leftLattice.getRightPoint();
 
-    if (leftLattice.getRightPoint() > rightLattice.getLeftPoint()) {
-      right = leftLattice.getLattice();
-      left = rightLattice.getLattice();
+    // There is overlap in the two intervals - you can not combine efficiently
+    if (leftOverlap && rightOverlap) {
+      return convexHull(combine(leftLattice, rightLattice));
     }
+
+    IntegerLattice leftL = leftLattice;
+    IntegerLattice rightL = rightLattice;
+
+    if (leftLattice.getLeftPoint() > rightLattice.getRightPoint()) {
+      IntegerLattice temp = rightLattice;
+      rightL = leftLattice;
+      leftL = temp;
+    }
+
+    ArrayList<Point> right = rightL.getLattice();
+    ArrayList<Point> left = leftL.getLattice();
 
     int leftMost = 0, rightMost = 0;
     int leftTp, rightTp;
@@ -348,36 +345,36 @@ public class ConvexHull {
       mergedHull.add(right.get(leftTp));
     }
 
-    return new IntegerLattice(leftLattice.getLeftPoint(), rightLattice.getRightPoint(), mergedHull);
+    return new IntegerLattice(leftL.getLeftPoint(), rightL.getRightPoint(), mergedHull);
 
   }
 
   /**
-   *    Find the convex hull of a set of 2 dimensional points. Assumes
-   *    that more than 3 points are provided to the algorithm. If less 
-   *    than three points are specified the program will terminate. 
-   *    
-   *    Jarvis's algorithm is used to find the convex hull in O(nh) time complexity 
-   *    where n is the number of points in the lattice and h is the number of points 
-   *    in the resultant convex hull. That is, the runtime is a function of the output size. 
-   *    
-   *    @param lattice The integer lattice for which we want to find the convex hull
-   *    @return The convex hull of the provided lattice 
-   * 
-   * */
+   * Find the convex hull of a set of 2 dimensional points. Assumes that more than 3 points are
+   * provided to the algorithm. If less than three points are specified the program will terminate.
+   * <p>
+   * Jarvis's algorithm is used to find the convex hull in O(nh) time complexity where n is the
+   * number of points in the lattice and h is the number of points in the resultant convex hull.
+   * That is, the runtime is a function of the output size.
+   *
+   * @param lattice The integer lattice for which we want to find the convex hull
+   * @return The convex hull of the provided lattice
+   */
   public static IntegerLattice convexHull(IntegerLattice lattice) {
-    
-    System.out.println("convexHull");
+
     ArrayList<Point> points = lattice.getLattice();
-    if (points.size() < 3)
+    if (points.size() < 3) {
       return null;
+    }
 
     ArrayList<Point> hull = new ArrayList<Point>();
 
     int l = 0;
-    for (int i = 1; i < points.size(); i++)
-      if (points.get(i).getX() < points.get(l).getX())
+    for (int i = 1; i < points.size(); i++) {
+      if (points.get(i).getX() < points.get(l).getX()) {
         l = i;
+      }
+    }
 
     // Selecting left pivot shuffle selecting "optimal" outside points 
     // those is, points that minimal orientations with pivots 
@@ -387,9 +384,9 @@ public class ConvexHull {
       q = (p + 1) % points.size();
       for (int i = 0; i < points.size(); i++) {
 
-        if (orient(points.get(p), points.get(i), points.get(q)) < 0)
-
+        if (orient(points.get(p), points.get(i), points.get(q)) < 0) {
           q = i;
+        }
       }
 
       p = q;
@@ -399,21 +396,33 @@ public class ConvexHull {
     return new IntegerLattice(lattice.getLeftPoint(), lattice.getRightPoint(), hull);
   }
 
- /** 
-  *  Provide the orientation of three points in space from point p 
-  *  to point r pivoting around q. 
-  *  
-  *  @param p Point (x,y) in space 
-  *  @param q Point (x,y) in space 
-  *  @param r Point (x,y) in space 
-  *  @return integer value representing the resulting orientation in space. 
-  * */
+  /**
+   * Provide the orientation of three points in space from point p to point r pivoting around q.
+   *
+   * @param p Point (x,y) in space
+   * @param q Point (x,y) in space
+   * @param r Point (x,y) in space
+   * @return integer value representing the resulting orientation in space.
+   */
   // Really the cross product in R^2
   public static int orient(Point p, Point q, Point r) {
     return (q.getY() - p.getY()) * (r.getX() - q.getX())
         - (q.getX() - p.getX()) * (r.getY() - q.getY());
   }
 
+  private static IntegerLattice combine(IntegerLattice one, IntegerLattice two) {
+
+    int leftPoint = (int) Math.min(one.getLeftPoint(), two.getLeftPoint());
+    int rightPoint = (int) Math.max(one.getRightPoint(), two.getRightPoint());
+    ArrayList<Point> temp = one.getLattice();
+
+    for (Point point : two.getLattice()) {
+      temp.add(point);
+    }
+
+    return new IntegerLattice(leftPoint, rightPoint, temp);
+
+  }
 
 
 }
