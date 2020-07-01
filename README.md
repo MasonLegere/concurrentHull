@@ -1,7 +1,3 @@
-# concurrentHull
-Finds the convex hull of a set of lattice points using a concurrent divide and conquer strategy.  
-
-
 ## Concurrent Hull
 Finds the convex hull of a set of cartesian points with integer coordinates using a concurrent divide and conquer sterategy. 
 Sychonronization done manually, implemented with a modified version of Baker's algorithm. The concurrent hull is found using a
